@@ -1,0 +1,17 @@
+{
+  "name": "the-swift-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watchAll"
+  },
+  "keywords": [],
+  "author": "Diel Duarte",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.17.9",
+    "jest": "^27.5.1"
+  }
+}
