@@ -54,36 +54,51 @@ const lexer = (program) => {
 
     currentString = ''
   }
-
   return tokens;
 }
 
 const parser = (tokens) => {
-  console.log(tokens)
-  const generateAST = (tokens, index = 0) => {
-    console.log(tokens)
+  let index = 0;
+  const generateAST = (tokens) => {
     const token = tokens[index];
     
     if(!token) return {}
 
     if(token.type === TokenType.STRUCT) {
+      index++;
       return {
         type: 'Component',
-        ...generateAST(tokens, index + 1)
+        ...generateAST(tokens)
       }
     }
 
     if(token.type === 'STRING' && tokens[index - 1].type === TokenType.STRUCT) {
+      index++;
       return {
         name: token.value,
-        ...generateAST(tokens, index + 1)
+        ...generateAST(tokens)
       }
     }
 
 
-    if(token.type === TokenType.VARIABLE_DECLARATION && tokens[index + 1].value === 'body') {
+    if(token.type === TokenType.VARIABLE_DECLARATION && tokens[index + 1].value === 'body') {       
+      index+=4;
+      let body = []
+     
+      while(index < tokens.length) {
+        const nextTokenIsValidChild = tokens[index].type === TokenType.HTML_ELEMENT
+        
+        if(!nextTokenIsValidChild) {
+          index++;
+          continue;
+        };
+
+        body.push(generateAST(tokens))
+        index++;
+      }
+
       return {
-        body: [generateAST(tokens, index + 4)]
+        body
       }
     }
 
@@ -110,34 +125,42 @@ const parser = (tokens) => {
     }
 
     if(token.type === TokenType.HTML_ELEMENT) {
+      index += 4;
+      const hasChildren = tokens[index].type !== TokenType.RIGHT_BRACKET
+
       return {
         type: 'HtmlElement',
         name: token.value,
-        children: [generateAST(tokens, index + 4)]
+        children: hasChildren 
+          ? [generateAST(tokens)] 
+          : []
       }
     }
 
-    return generateAST(tokens, index + 1);
+    index++;
+    return generateAST(tokens);
   }
 
-  return generateAST(tokens, 0)
+  return generateAST(tokens)
 }
 
 const generator = (nodeAST) => {
-  console.log(nodeAST)
-
   let program = ''
 
   if(!nodeAST) return ''
 
   if(nodeAST.type === 'Component') {
-    const bodyProgram = (nodeAST.body ?? []).reduce((prev, next) => {
-      console.log(nodeAST.body)
+    const body = nodeAST.body ?? [];
+    const shouldInsertFragment = body.length > 1
+
+    const bodyProgram = body.reduce((prev, next) => {
       return prev + generator(next);
-    }, '')
+    },'')
 
     program += `const ${nodeAST.name} = () => {
-      return ${bodyProgram !== '' ? bodyProgram : 'null;'}
+      return ${shouldInsertFragment ? '<>' : ''}
+        ${bodyProgram !== '' ? bodyProgram : 'null;'}
+      ${shouldInsertFragment ? '</>' : ''}  
     }`
   }
 

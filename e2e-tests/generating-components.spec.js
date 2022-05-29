@@ -51,27 +51,28 @@ describe('when generating components', () => {
     }`.replace(/\s/g, ''))
   })
 
-  it.skip('should generate siblings elements within body', () => {
+  it('should generate siblings elements within body', () => {
     const program = `struct MyAppTest = { 
       let body = {
         button() {
-          p() {
-            text('testing')
-          }
+          text('hello')
         }
         h1() {
-          text('title')
+          text('hello')
         }
       } 
     }`
 
 
     expect(compiler(program).replace(/\s/g, '')).toEqual(`const MyAppTest = () => { 
-      return <button>
-        <p>
-          testing
-        </p>
-      </button>
+      return <>
+        <button>
+          hello
+        </button>
+        <h1>
+          hello
+        </h1>
+      </>
     }`.replace(/\s/g, ''))
   })
 
