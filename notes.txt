@@ -1,1 +1,1 @@
-- lexer tokens
+- definição de escopo

@@ -2,10 +2,9 @@ import compiler from '../index'
 
 describe('when generating components', () => {
   it('should generate a function return null', () => {
-    const program = `struct App = {
-      
-    }`
-
+    const program = `struct App = {}`
+    console.log(compiler(program))
+    
     expect(compiler(program).replace(/\s/g, '')).toEqual(`const App = () => { return null; }`.replace(/\s/g, ''))
   })
 
@@ -73,6 +72,31 @@ describe('when generating components', () => {
           hello
         </h1>
       </>
+    }`.replace(/\s/g, ''))
+  })
+
+  it('should generate siblings elements within another element', () => {
+    const program = `struct MyAppTest = { 
+      let body = {
+        section() {
+          h1() {
+            text('hello')
+          }
+          button() {
+            text('click here')
+          }
+        }
+      }   
+    }`
+
+
+    expect(compiler(program).replace(/\s/g, '')).toEqual(`const MyAppTest = () => { 
+      return <section>
+        <h1>hello</h1>
+        <button>
+          click here
+        </button>
+      </section>
     }`.replace(/\s/g, ''))
   })
 
